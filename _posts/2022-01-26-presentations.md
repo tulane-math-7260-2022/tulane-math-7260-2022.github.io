@@ -1,7 +1,7 @@
 ---
 layout: post_teaching
 title: Presentation Dates
-category: math6040/7260spring2021
+category: math6040/7260spring2022
 ---
 
 ## Course presentations
