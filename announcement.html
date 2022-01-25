@@ -1,0 +1,16 @@
+---
+layout: course
+title: Math 6040/7260
+---
+
+<h3>Posts</h3>
+<ul>
+  {% for post in site.posts %}
+  {% if post.category contains 'math6040/7260spring2022' %}
+<li class="post">
+  <span class="date">{{ post.date | date_to_string }}</span>
+  <a href="{{ site.url }}{{ post.url }}" title="{{ post.title }}">{{ post.title }}</a>
+</li>
+	{% endif %}
+  {% endfor %}
+</ul>

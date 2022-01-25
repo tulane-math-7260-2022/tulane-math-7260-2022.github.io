@@ -1,0 +1,31 @@
+---
+layout: course
+title: Math 6040/7260
+---
+
+## Course Schedule
+
+Math 6040/7260 tentative schedule and handouts (expect frequent updates)
+
+[lecture notes](../notes/combined.pdf)
+
+[pre-lecture notes](../notes/current.pdf)(last update: {{ "now" | date: "%b %d" }})
+
+<!---->
+
+Topics:
+
+- elementary probability and linear algebra review
+- simple linear regression
+- multiple linear regression
+- hypothesis testing
+- variance components and mixed models
+- bootstrap
+- generalized linear model (?)
+
+
+| Monday | Wednesday | Friday | HW |
+|:-----------|:-----------|:------------|:---|
+| | **01/26** Intro | | |
+| **02/28** no class (Mardi Gras Holiday)| | | |
+| **03/28** no class (spring break) | **03/30** no class (spring break) | **04/01** no class (spring break) | |
