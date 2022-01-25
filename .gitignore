@@ -2,3 +2,6 @@ _site/
 .sass-cache/
 .jekyll-cache/
 .jekyll-metadata
+
+# MacOS temp file
+.DS_Store
