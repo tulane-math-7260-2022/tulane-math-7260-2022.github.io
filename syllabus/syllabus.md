@@ -13,16 +13,17 @@ The term “linear models” describes a wide class of methods for the statistic
 
 ### Lecture and Practicals
 
-Mon 11:00am - 11:50am @ Howard-Tilton Memorial Hall 116 and Zoom <>\
-Wed 11:00am - 11:50am @ Howard-Tilton Memorial Hall 116 and Zoom <>\
-Fri 11:00am - 11:50am @ Zoom <>
+Mon 11:00am - 11:50am @ Howard-Tilton Memorial Hall 116 and Zoom <https://tulane.zoom.us/j/94748340296>\
+Wed 11:00am - 11:50am @ Howard-Tilton Memorial Hall 116 and Zoom <https://tulane.zoom.us/j/94748340296>\
+Fri 11:00am - 11:50am @ Zoom <https://tulane.zoom.us/j/96583956151>
 
 ### Instructor
 
-[Xiang Ji](https://sse.tulane.edu/math/faculty/ji)\
-Office: N.A. due to COVID\
+[Dr. Xiang Ji](https://sse.tulane.edu/math/faculty/ji)\
+Office: Gibson 401D\
 Email: <xji4@tulane.edu>\
-Office hours: Friday 9:30am - 10:45am with zoom link <https://tulane.zoom.us/j/96341432148>, or by appointment.
+Office hours: Friday 9:45 am - 10:45 am with zoom link: <https://tulane.zoom.us/j/97602892460>, or by appointment.
+
 
 ### Textbooks
 
