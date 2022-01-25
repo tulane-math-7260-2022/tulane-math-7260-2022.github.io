@@ -5,3 +5,7 @@ _site/
 
 # MacOS temp file
 .DS_Store
+
+# notes related
+notes/
+
