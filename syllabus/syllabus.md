@@ -13,8 +13,8 @@ The term “linear models” describes a wide class of methods for the statistic
 
 ### Lecture and Practicals
 
-Mon 11:00am - 11:50am @ Howard-Tilton Memorial Hall 116 and Zoom <https://tulane.zoom.us/j/94748340296>\
-Wed 11:00am - 11:50am @ Howard-Tilton Memorial Hall 116 and Zoom <https://tulane.zoom.us/j/94748340296>\
+Mon 11:00am - 11:50am @ Howard-Tilton Memorial Library 116 and Zoom <https://tulane.zoom.us/j/94748340296>\
+Wed 11:00am - 11:50am @ Howard-Tilton Memorial Library 116 and Zoom <https://tulane.zoom.us/j/94748340296>\
 Fri 11:00am - 11:50am @ Zoom <https://tulane.zoom.us/j/96583956151>
 
 ### Instructor
