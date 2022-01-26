@@ -13,10 +13,10 @@ All graduate students are required to deliver a 15-min talk (10 min presentation
 The topics are given by key words only.  Please practice your ability of "educated" searches with google.
 
 - **Software** key words: stan, bugs & jags, hadoop, spark, tensorflow, Scikit-Learn, Blas & Lapack
-- **Stastician** key words: R. A. Fisher, Carl Friedrich Gauss, Andrey Markov, Karl Pearson, Francis Galton, John Craig
+- **Stastician** key words: R. A. Fisher, Andrey Markov, Karl Pearson, Francis Galton, John Craig, George Box, David Cox, William Cochran, Gertrude Cox, 
 - **Research** areas: Causal Inference, Forensic Statistics, Bayesian Statistics, Approximate Bayesian Computation, Sequential Monte Carlo method, Variational Bayes, Spatial statistics, Precision Medicine
 - **Parallel computing**: OpenCL, Cuda, SIMD (SSE + AVX)
-- **Other**: Frequentist vs. Bayesian debate, Fingerprints & DNA fingerprints
+- **Other**: Frequentist vs. Bayesian debate, Algorithms behind Machine Learning
 
 ### Available dates
 
