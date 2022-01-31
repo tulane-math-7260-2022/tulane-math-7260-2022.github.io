@@ -21,7 +21,7 @@ Topics:
 - hypothesis testing
 - variance components and mixed models
 - bootstrap
-- generalized linear model (?)
+- logistic regression
 
 
 | Monday | Wednesday | Friday | HW |
