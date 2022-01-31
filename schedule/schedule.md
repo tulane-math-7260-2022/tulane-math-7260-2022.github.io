@@ -27,7 +27,7 @@ Topics:
 | Monday | Wednesday | Friday | HW |
 |:-----------|:-----------|:------------|:---|
 | | **01/26** Intro | **01/28** Git intro | |
-| **01/31** Linear algebra review | | | [HW1](../HW/HW1.pdf) |
+| **01/31** Linear algebra review | | | [HW1](../HW/HW1/HW1.pdf) |
 | **02/28** no class (Mardi Gras Holiday)| | | |
 | | **03/09** no class (mid-term exam begins) | **03/11** mid-term exam | |
 | **03/28** no class (spring break) | **03/30** no class (spring break) | **04/01** no class (spring break) | |
