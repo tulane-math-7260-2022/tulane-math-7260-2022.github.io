@@ -1,0 +1,121 @@
+---
+title: "lab 2 SLR to fill"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+rm(list = ls()) # clean-up workspace
+```
+
+Let's read in the Davis data.
+
+```{r}
+davis.data <- read.table("./Davis.txt")
+davis.data[12, "height"] <- 166
+davis.data[12, "weight"] <- 57
+
+# remove rows with missing data
+davis.data <- davis.data[complete.cases(davis.data), ]
+
+# take a look at the data
+davis.data
+```
+
+-------------------------------------
+
+You need to fill out the following sections for answering the questions.
+
+
+
+Construct $X$, $X^TX$, and $Y$.
+
+```{r, eval=FALSE}
+# construct the design matrix
+X <- 
+# assign names to X column
+colnames(X) <- c("intercept", "reportedWeight")
+
+# construct the Gramian matrix
+gramian.mat <- 
+gramian.mat
+
+# calculate the inverse of the Gramian matrix
+gramian.mat.inv <- solve(gramian.mat)
+
+# construct the Y matrix
+Y <- as.matrix(davis.data[, "weight"])
+```
+
+Q1. Now let's calculate the least square estimates
+
+```{r, eval=FALSE}
+# Now calculate the LS estimate
+beta.estimate <- 
+beta.estimate
+```
+
+Q2. Now calculate the variance-covariance matrix to get the standard error of $\hat{\beta}_1$
+
+```{r, eval=FALSE}
+# calculate sum of squared errors (or residuals)
+sse <- 
+sse
+
+# calculate mean squared errors
+mse <- 
+mse
+
+# calculate the variance-covariance matrix for beta hat
+sigma.matrix <- 
+sigma.matrix
+
+# standard error for beta_1
+sqrt(sigma.matrix[2, 2])
+```
+
+Q3. Hypothesis test of $H_0: \beta_1 = 0$
+
+t(0.025, 179) critical value (the design matrix has 181 rows / 181 observations):
+
+```{r, eval=FALSE}
+qt(1.0 - 0.025, 179) #take a look at the documentation of "qt"
+# t statistic
+t.statistic <- 
+```
+
+Q4. Mean weight estimate given reportedWeight = 72:
+
+```{r, eval=FALSE}
+a.vector <- c(1, 72)
+mean.weight.est <- 
+mean.weight.est
+```
+
+Q5. standard error:
+
+```{r, eval=FALSE}
+theta.se <- sqrt()
+theta.se
+```
+
+Q6. 95% confidence interval:
+
+```{r, eval=FALSE}
+confidence.interval <- 
+confidence.interval
+```
+
+
+---------------------------------------------------------
+
+Use `lm` to check
+
+```{r}
+(lmod <- lm(weight ~ reportedWeight, data = davis.data))
+summary(lmod)
+
+predict(lmod, newdata = data.frame("1" = 1, "reportedWeight" = 72), interval = "confidence")
+```
+
