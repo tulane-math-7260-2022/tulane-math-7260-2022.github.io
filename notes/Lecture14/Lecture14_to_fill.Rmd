@@ -1,0 +1,82 @@
+---
+title: "Lab 03"
+author: "Dr. Xiang Ji @ Tulane University"
+date: "Feb 25, 2022"
+output:
+  html_document:
+    toc: true
+    toc_depth: 4  
+subtitle: Math 6040/7260 Linear Models
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+rm(list = ls()) # clean-up workspace
+```
+
+## Simple Linear Regression
+
+The `Davis` data set in the **carData** package contains the measured and self-reported heights and weights of 200 men and women engaged in regular exercise.  A few of the data values are missing, and consequently there are only 183 complete cases for the variables that are used in the analysis reported below.
+
+First, take a quick look at the data:
+
+```{r}
+library(carData)
+summary(Davis)
+```
+
+### Q1. How many variables are in the `Davis` data and explain what they represent
+
+
+We focus here on the regression of `weight` on `repwt`.  This problem has response $y=weight$ and one predictor, `repwt`, from which we obtain the regressor $x_1=repwt$.  We again construct the design matrix and response vector first.
+
+```{r}
+X <- as.matrix(cbind(1, Davis[, "repwt"]))
+Y <- as.matrix(Davis[, "weight"])
+
+# Now get X rows with complete observations
+X.complete.rows <- complete.cases(X)  # read the documentation of funciton complete.cases()
+# Similarly get Y's
+Y.complete.rows <- complete.cases(Y)
+
+# subset X and Y 
+X <- X[X.complete.rows & Y.complete.rows, ]
+Y <- Y[X.complete.rows & Y.complete.rows, ]
+```
+
+### Q2.  Calculate the least square estimate using $\hat{\beta_{ls}} = (X^TX)^{-1}X^TY$.
+
+```{r}
+
+```
+
+### Q3. Calculate the total sum of squares, residual sum of squares and regression sum of squares.  Test $SST - SSR - SSReg$, explain what you get.
+
+```{r}
+
+```
+
+### Q4. Calculate the mean squared error (MSE).
+
+```{r}
+
+```
+
+### Q5. Calculate the test statistic for testing the null hypothesis $H_0: \beta_0 = 0$ vs $H_a: \beta_0 \ne 0$, report the p-value.
+
+```{r}
+
+```
+
+### Q6. Fit the same model using `lm()` function and check your calculations above
+
+```{r}
+
+```
+
+### Q7. Repeat Q2 to Q6 for the dataset `Mandel` to regress `y` on `x1`.
+
+```{r}
+
+```

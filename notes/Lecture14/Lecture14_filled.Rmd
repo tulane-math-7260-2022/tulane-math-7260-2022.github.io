@@ -1,0 +1,105 @@
+---
+title: "Lab 03 keys"
+author: "Dr. Xiang Ji @ Tulane University"
+date: "Feb 25, 2022"
+output:
+  html_document:
+    toc: true
+    toc_depth: 4  
+subtitle: Math 6040/7260 Linear Models
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(carData)
+rm(list = ls()) # clean-up workspace
+```
+
+## Simple Linear Regression
+
+The `Davis` data set in the **carData** package contains the measured and self-reported heights and weights of 200 men and women engaged in regular exercise.  A few of the data values are missing, and consequently there are only 183 complete cases for the variables that are used in the analysis reported below.
+
+First, take a quick look at the data:
+
+```{r}
+library(carData)
+summary(Davis)
+```
+
+### Q1. How many variables are in the `Davis` data and explain what they represent
+
+| Variable | Meaning|
+|:---:|:----|
+|sex | A factor with levels: F, female; M, male|
+|weight | Measured weight in kg |
+|height | Measured height in cm |
+|repwt  | Reported weight in kg |
+|repht  | Reported height in cm |
+
+We focus here on the regression of `weight` on `repwt`.  This problem has response $y=weight$ and one predictor, `repwt`, from which we obtain the regressor $x_1=repwt$.  We again construct the design matrix and response vector first.
+
+```{r}
+X <- as.matrix(cbind(1, Davis[, "repwt"]))
+Y <- as.matrix(Davis[, "weight"])
+
+# Now get X rows with complete observations
+X.complete.rows <- complete.cases(X)  # read the documentation of funciton complete.cases()
+# Similarly get Y's
+Y.complete.rows <- complete.cases(Y)
+
+# subset X and Y 
+X <- X[X.complete.rows & Y.complete.rows, ]
+Y <- Y[X.complete.rows & Y.complete.rows, ]
+```
+
+### Q2.  Calculate the least square estimate using $\hat{\beta_{ls}} = (X^TX)^{-1}X^TY$.
+
+```{r}
+beta.estimate <- solve(crossprod(X), crossprod(X, Y))
+beta.estimate
+```
+
+### Q3. Calculate the total sum of squares, residual sum of squares and regression sum of squares.  Test $SST - SSR - SSReg$, explain what you get.
+
+```{r}
+SST <- crossprod(Y - mean(Y))
+Y.hat <- X %*% beta.estimate
+SSR <- crossprod(Y - Y.hat)
+SSReg <- crossprod(Y.hat - mean(Y))
+SST - SSR - SSReg
+```
+
+### Q4. Calculate the mean squared error (MSE).
+
+```{r}
+mse <- SSR / (dim(X)[1] - 2)
+mse
+```
+
+### Q5. Calculate the test statistic for testing the null hypothesis $H_0: \beta_0 = 0$ vs $H_a: \beta_0 \ne 0$, report the p-value.
+
+```{r}
+sigma <- as.numeric(mse) * solve(crossprod(X))
+beta.0.se <- sqrt(sigma[1, 1])
+t.beta.0 <- beta.estimate[1] / beta.0.se
+t.beta.0
+p.value <- pt(t.beta.0, dim(X)[1] - 2, lower.tail = FALSE) * 2
+p.value
+```
+
+### Q6. Fit the same model using `lm()` function and check your calculations above
+
+```{r}
+lmod <- lm(weight ~ repwt, data = Davis)
+summary(lmod)
+# sum of squares
+anova(lmod)
+```
+
+### Q7. Repeat Q2 to Q6 for the dataset `Mandel` to regress `y` on `x1`.
+
+```{r}
+lmod.Mandel <- lm(y ~ x1, data = Mandel)
+summary(lmod.Mandel)
+```
