@@ -1,0 +1,139 @@
+---
+title: "Lab_04_filled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+rm(list = ls()) # clean-up workspace
+```
+
+Let's read in the Duncan data and reproduce Figure 3.18 first.
+
+```{r}
+prestige.data <- read.table("./Duncan.txt")
+
+pairs(prestige.data[, c("income", "education", "prestige")])
+
+```
+
+-------------------------------------
+
+You need to fill out the following sections for answering the questions.
+
+
+
+Construct $X$, $X^TX$, and $Y$.
+
+```{r}
+# construct the design matrix
+X <- as.matrix(cbind(1, prestige.data[, c(2, 3)]))
+X <- as.matrix(cbind(1, prestige.data[, c("income", "education")]))
+
+# construct the Gramian matrix
+system.time(gramian.mat <- t(X) %*% X)
+system.time(gramian.mat <- crossprod(X))
+gramian.mat
+
+# calculate the inverse of the Gramian matrix
+gramian.mat.inv <- solve(gramian.mat)
+
+# construct the Y matrix
+Y <- as.matrix(prestige.data[, "prestige"])
+```
+
+Q1. Now let's calculate the least square estimates
+
+```{r}
+# Now calculate the LS estimate
+system.time(beta.estimate <- solve(gramian.mat) %*% t(X) %*% Y)
+beta.estimate
+system.time(beta.estimate <- solve(crossprod(X), crossprod(X, Y)))
+beta.estimate
+```
+
+Q2. Now calculate the variance-covariance matrix to get the standard error of $\hat{\beta}_1$
+
+```{r}
+# calculate sum of squared errors (or residuals)
+sse <- crossprod(Y - X %*% beta.estimate)
+sse
+
+# calculate mean squared errors
+mse <- sse / (45 - 2 - 1)
+mse
+
+# calculate the variance-covariance matrix for beta hat
+sigma.matrix <- as.numeric(mse) * solve(t(X) %*% X)
+sigma.matrix
+
+# standard error
+sqrt(sigma.matrix[2, 2])
+```
+
+Q3. Hypothesis test of $H_0: \beta_1 = 0$
+
+t(0.025, 42) critical value:
+
+```{r}
+qt(1.0 - 0.025, 42) #take a look at the documentation of "qt"
+# t statistic
+beta.estimate[2] / sqrt(sigma.matrix[2, 2])
+```
+
+Q4. Mean prestige estimate given $income = 42$ and $education = 84$:
+
+```{r}
+a.vector <- c(1, 42, 84)
+mean.prestige.est <- a.vector %*% beta.estimate
+mean.prestige.est
+```
+
+Q5. standard error:
+
+```{r}
+theta.se <- sqrt(crossprod(a.vector, sigma.matrix %*% a.vector))
+theta.se
+```
+
+Q6. 95% confidence interval:
+
+```{r}
+confidence.interval <- as.numeric(mean.prestige.est) + c(-1, 1) *  qt(1.0 - 0.025, 42) * as.numeric(theta.se)
+confidence.interval
+```
+
+
+---------------------------------------------------------
+
+Use `lm` to check
+
+```{r}
+(lmod <- lm(prestige ~ income + education, data = prestige.data))
+beta.estimate
+summary(lmod)
+
+predict(lmod, newdata = data.frame("1" = 1, "income" = 42, "education" = 84), interval = "confidence")
+```
+
+
+---------------------------------------------------------
+
+Q7. test the null hypothesis $H_0: \beta_1 = \beta_2 = 0$.
+
+```{r}
+(lmod.red <- lm(prestige ~ 1, data = prestige.data))
+mean(prestige.data[, "prestige"])
+
+# method 1
+sse.full <- as.numeric(sse)
+df.full <- dim(prestige.data)[1] - 2 - 1
+sse.red <- as.numeric(crossprod(prestige.data[, "prestige"] - mean(prestige.data[, "prestige"])))
+df.red <- dim(prestige.data)[1] - 1
+(F.statistic <- (sse.red - sse.full) / (df.red - df.full) / (sse.full / df.full))
+pf(F.statistic, df.red - df.full, df.full, lower.tail = FALSE)
+
+# method 2
+anova(lmod, lmod.red)
+```

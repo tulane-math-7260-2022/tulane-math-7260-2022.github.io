@@ -1,0 +1,129 @@
+---
+title: "Lab_04_to_fill"
+date: "March 4, 2022"
+output:
+  html_document:
+    toc: true
+    toc_depth: 4  
+subtitle: MATH-6040/7260 Linear Models
+csl: ../apa.csl
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+rm(list = ls()) # clean-up workspace
+```
+
+Let's read in the Duncan data and reproduce Figure 3.18 first.
+
+```{r}
+prestige.data <- read.table("./Duncan.txt")
+
+pairs(prestige.data[, c("income", "education", "prestige")])
+
+```
+
+-------------------------------------
+
+You need to fill out the following sections for answering the questions.
+
+
+## Construct $X$, $X^TX$, and $Y$.
+
+```{r}
+# construct the design matrix
+X <- as.matrix(cbind(1, prestige.data[, c(2, 3)]))
+X <- as.matrix(cbind(1, prestige.data[, c("income", "education")]))
+
+
+# construct the Gramian matrix
+system.time(gramian.mat <- t(X) %*% X)
+system.time(gramian.mat <- crossprod(X))
+gramian.mat
+
+# calculate the inverse of the Gramian matrix
+gramian.mat.inv <- solve(gramian.mat)
+
+# construct the Y matrix
+Y <- as.matrix(prestige.data[, "prestige"])
+```
+
+## Q1. Now let's calculate the least square estimates
+
+```{r, eval=FALSE}
+# Now calculate the LS estimate
+beta.estimate <- solve(t(X) %*% X) %*% t(X) %*% Y
+beta.estimate <- solve(t(X) %*% X) %*% (t(X) %*% Y)
+beta.estimate <- solve(t(X) %*% X, t(X) %*% Y)
+beta.estimate
+```
+
+## Q2. Now calculate the variance-covariance matrix to get the standard error of $\hat{\beta}_1$
+
+```{r, eval=FALSE}
+# calculate sum of squared errors (or residuals)
+sse <- 
+
+# calculate mean squared errors
+mse <- 
+
+# calculate the variance-covariance matrix for beta hat
+sigma.matrix <- 
+
+# standard error for beta_1
+sqrt(sigma.matrix[2, 2])
+```
+
+## Q3. Hypothesis test of $H_0: \beta_1 = 0$
+
+t(0.025, 42) critical value:
+
+```{r, eval=FALSE}
+qt(1.0 - 0.025, 42) #take a look at the documentation of "qt"
+# t statistic
+beta.estimate[2] / sqrt(sigma.matrix[2, 2])
+```
+
+## Q4. Mean prestige estimate given $income = 42$ and $education = 84$:
+
+```{r, eval=FALSE}
+a.vector <- c(1, 42, 84)
+mean.prestige.est <- 
+```
+
+## Q5. standard error:
+
+```{r, eval=FALSE}
+theta.se <- 
+```
+
+## Q6. 95% confidence interval:
+
+```{r, eval=FALSE}
+confidence.interval <- 
+```
+
+Use `lm` to check
+
+```{r}
+(lmod <- lm(prestige ~ income + education, prestige.data))
+summary(lmod)
+
+predict(lmod, newdata = data.frame("1" = 1, "income" = 42, "education" = 84), interval = "confidence")
+```
+
+---------------------------------------------------------
+
+## Q7. test the null hypothesis $H_0: \beta_1 = \beta_2 = 0$. (Optional)
+
+```{r, eval=FALSE}
+(lmod.red <- lm(prestige ~ 1, data = prestige.data))
+mean(prestige.data[, "prestige"])
+
+# calculate the F statistic
+F.statistic <-
+  
+# use pf function to get the associated p-value
+p.value <- pf(F.statistic, ndf, ddf, lower.tail=FALSE)
+```
