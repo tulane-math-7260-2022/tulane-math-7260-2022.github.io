@@ -32,6 +32,7 @@ Topics:
 | **02/14** SLR properties | **02/16** Inference of SLR | **02/18** Lab 2 \[[Rmd](../notes/Lecture11/lab_02_SLR_to_fill.Rmd)\]\[[HTML](../notes/Lecture11/lab_02_SLR_to_fill.html)\] | [HW2](../HW/HW2/HW2.pdf) |
 | **02/21** Multiple Linear Regression | **02/23** Inference of MLR | **02/25** Lab 3 \[[Rmd](../notes/Lecture14/Lecture14_to_fill.Rmd)\]\[[HTML](../notes/Lecture14/Lecture14_to_fill.html)\] | |
 | **02/28** no class (Mardi Gras Holiday)| **03/02** Dummy variable regression | **03/04** Lab 4 \[[Rmd](../notes/Lecture16/Lab_04_to_fill.Rmd)\]\[[HTML](../notes/Lecture16/Lab_04_to_fill.html)\] | |
+| **03/07** Interactions | | | |
 | | **03/09** no class (mid-term exam begins) | **03/11** mid-term exam | |
 | **03/28** no class (spring break) | **03/30** no class (spring break) | **04/01** no class (spring break) | |
 | **05/02** Final exam | | | |
