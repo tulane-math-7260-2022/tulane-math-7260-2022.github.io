@@ -34,5 +34,6 @@ Topics:
 | **02/28** no class (Mardi Gras Holiday)| **03/02** Dummy variable regression | **03/04** Lab 4 \[[Rmd](../notes/Lecture16/Lab_04_to_fill.Rmd)\]\[[HTML](../notes/Lecture16/Lab_04_to_fill.html)\] | |
 | **03/07** Interactions | **03/09** no class (mid-term exam begins) | **03/11** mid-term exam | |
 | **03/14** Unusual data  | | | |
+| | | | |
 | **03/28** no class (spring break) | **03/30** no class (spring break) | **04/01** no class (spring break) | |
 | **05/02** Final exam | | | |
