@@ -1,0 +1,324 @@
+---
+title: "Lab 05"
+author: "Dr. Xiang Ji @ Tulane University"
+date: "March 18, 2022"
+output:
+  html_document:
+    toc: yes
+    toc_depth: 4
+subtitle: Math 6040/7260 Linear Models
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list = ls()) # clean-up workspace
+library(tidyverse)
+library(carData)
+library(faraway)
+library(car)
+```
+
+## Acknowledgement
+
+Dr. Hua Zhou's [slides](https://ucla-biostat-200c-2020spring.github.io/slides/02-lm/lm.html)
+
+## Goal of this lab
+
+Please try to run the code below and understand them.
+
+## GA 2000 US Presidential Election Data
+
+The `gavote` data contains the voting data of Georgia (GA) in the 2000 presidential election. It is available as a dataframe. 
+```{r}
+# equivalent to head(gavote, 10)
+gavote %>% head(10)
+```
+We convert it into a tibble for easy handling by tidyverse.
+```{r}
+gavote <- gavote %>% 
+  as_tibble(rownames = "county") %>%
+  print(width = Inf)
+```
+
+- Each row is a county in GA. 
+
+- The number of votes, `votes`, can be smaller than the number of ballots, `ballots`, because a vote is not recorded if (1) the person fails to vote for President, (2) votes for more than one candidate, or (3) the equipment fails to record the vote. 
+
+- We are interested in the `undercount`, which is defined as `(ballots - votes) / ballots`. Does it depend on the type of voting machine `equip`, economy `econ`, percentage of African Americans `perAA`, whether the county is rural or urban `rural`, or whether the county is part of Atlanta metropolitan area `atlanta`. 
+
+    Let's create a new variable `undercount`
+```{r}
+gavote <- gavote %>%
+  mutate(undercount = (ballots - votes) / ballots) %>%
+  print(width = Inf)
+```
+
+- For factor `rural`, we found the variable name is same as one level in this factor. To avoid confusion, we rename it to `usage`.
+
+  We also want to standardize the counts `gore` and `bush` according to the total `votes`.
+```{r}
+(gavote <- gavote %>%
+  rename(usage = rural) %>%
+  mutate(pergore = gore / votes, perbush = bush / votes)) %>%
+  print(width = Inf)
+```
+
+## A model with two quantitative predictors
+
+- We start with a linear model with just two predictors: percentage of Gore votes, `pergore`, and percentage of African Americans, `perAA`.
+$$
+\text{undercount} = \beta_0 + \beta_1 \cdot \text{pergore} + \beta_2 \cdot \text{perAA} + \epsilon.
+$$
+
+### `lm`
+
+```{r}
+(lmod <- lm(undercount ~ pergore + perAA, gavote))
+```
+
+- The **regression coefficient** $\widehat{\boldsymbol{\beta}}$ can be retrieved by
+```{r}
+# same lmod$coefficients
+coef(lmod)
+```
+
+- interpreting the partial regression coefficients:
+
+    - __Geometric interpretation__: The partial regression coefficient $\beta_j$ associated with the predictor $x_j$ is the slope of the regression plane in the $x_j$ direction.  Imagine taking a "slice" of the regression plane.  In the terminology of calculus, $\beta_j$ is also the partial derivative of the regression plane with respect to the predictor $x_j$.
+    
+    - __Verbal interpretation__: The partial regression coefficient $\beta_j$ associated with predictor $x_j$ is the slope of the linear association between $y$ and $x_j$ _while controlling for the other predictors in the model_ (i.e., holding them constant).
+
+- The **fitted values** or **predicted values** are
+$$
+\widehat{\mathbf{y}} = \mathbf{X} \widehat{\boldsymbol{\beta}}
+$$
+```{r}
+# same as lmod$fitted.values
+predict(lmod) %>% head()
+```
+and the **residuals** are
+$$
+\widehat{\boldsymbol{\epsilon}} = \mathbf{y} - \widehat{\mathbf{y}} = \mathbf{y} - \mathbf{X} \widehat{\boldsymbol{\beta}}. 
+$$
+```{r}
+# same as lmod$residuals
+residuals(lmod) %>% head()
+```
+
+- The **residual sum of squares** (RSS), also called **deviance**, is $\|\widehat{\boldsymbol{\epsilon}}\|^2$.
+```{r}
+deviance(lmod)
+```
+
+- The **degree of freedom** of a linear model is $n-p$.
+```{r}
+nrow(gavote) - length(coef(lmod))
+df.residual(lmod)
+```
+
+### `summary`
+
+- The `summary` command computes some more regression quantities.
+
+```{r}
+(lmodsum <- summary(lmod))
+```
+
+- An unbiased estimate of the error variance $\sigma^2$ is
+$$
+\widehat{\sigma} = \sqrt{\frac{\text{RSS}}{\text{df}}}
+$$
+```{r}
+sqrt(deviance(lmod) / df.residual(lmod))
+lmodsum$sigma
+```
+
+- A commonly used goodness of fit mesure is **$R^2$**, or **coefficient of determination** or **percentage of variance explained**
+$$
+R^2 = 1 - \frac{\sum_i (y_i - \widehat{y}_i)^2}{\sum_i (y_i - \bar{y})^2} = 1 - \frac{\text{RSS}}{\text{TSS}},
+$$
+where $\text{TSS} = \sum_i (y_i - \bar{y})^2$ is the **total sum of squares**.
+```{r}
+lmodsum$r.squared
+```
+An $R^2$ of about 5% indicates the model has a poor fit. $R^2$ can also be interpreted as the (squared) correlation between the predicted values and the response
+```{r}
+cor(predict(lmod), gavote$undercount)^2
+```
+
+## A model with both quantitative and qualitative predictors
+
+- Now we also want to include factors `equip` and `usage`, and interaction between `pergore` and `usage` into the model.
+
+- Before that, we first center the `pergore` and `perAA` variables.
+```{r}
+gavote <- gavote %>%
+   mutate(cpergore = pergore - mean(pergore), cperAA = perAA - mean(perAA)) %>%
+   print(width = Inf)
+```
+
+- Fit the new model with `lm`. We note the model respects the hierarchy. That is the main effects are automatically added to the model in presense of their interaction. **Question**: how to specify a formula involving just an interaction term but not their main effect?
+```{r}
+lmodi <- lm(undercount ~ cperAA + cpergore * usage + equip, gavote)
+summary(lmodi)
+```
+The `gtsummary` package offers a more sensible diplay of regression results.
+```{r}
+library(gtsummary)
+lmodi %>%
+  tbl_regression() %>%
+  bold_labels() %>%
+  bold_p(t = 0.05)
+```
+
+- From the output, we learn that the model is
+\begin{eqnarray*}
+\text{undercount} &=& \beta_0 + \beta_1 \cdot \text{cperAA} + \beta_2 \cdot \text{cpergore} + \beta_3 \cdot \text{usageurban} + \beta_4 \cdot \text{equipOS-CC} + \beta_5 \cdot \text{equipOS-PC} \\
+& & + \beta_6 \cdot \text{equipPAPER} + \beta_7 \cdot \text{equipPUNCH} + \beta_8 \cdot \text{cpergore:usageurban} + \epsilon.
+\end{eqnarray*}
+
+- **Exercise**: Explain how the variables in `gavote` are translated into $\mathbf{X}$.
+```{r}
+gavote %>%
+  select(cperAA, cpergore, equip, usage) %>%
+  head(10)
+model.matrix(lmodi) %>% head(10)
+```
+
+- **Exerciese**: Interpret regression coefficient.  
+    - How do we interpret $\widehat \beta_0 = 0.043$?   
+    - How do we interpret $\widehat \beta_{\text{cperAA}} = 0.0283$?    
+    - How do we interpret $\widehat \beta_{\text{equipOS-PC}} = 0.016$? 
+    - How do we interpret $\widehat \beta_{\text{usageurban}} = -0.019$? 
+    - How do we interpret $\widehat \beta_{\text{cpergore:usageurban}} = -0.009$? 
+
+## Hypothesis testing
+
+- We want to formally compare the two linear models.  
+    - A larger model $\Omega$ with $p=9$ parameters and  
+    - a smaller model $\omega$ with $q=3$ parameters.
+    
+- The $F$-test compares the $F$-statistic
+$$
+F = \frac{(\text{RSS}_{\omega} - \text{RSS}_{\Omega}) / (p - q)}{\text{RSS}_{\Omega} / (n - p)}
+$$
+to its null distribution $F_{p-q, n-p}$. The small p-value 0.0028 indicates we should reject the null model $\omega$.
+```{r}
+anova(lmod, lmodi)
+```
+
+- We can carry out a similar $F$-test for each predictor in a model using the `drop1` function. The nice thing is that the factors such as `equip` and `cpergore * usage` are droped as a group. 
+```{r}
+drop1(lmodi, test = "F")
+```
+We also see $F$-test for quantitative variables, e.g., `cperAA`, conincides with the $t$-test reported by the `lm` function. **Question**: why `drop1` function does not drop predictors `cpergore` and `usage`? 
+
+## Confidence intervals
+
+- Confidence intervals for individual parameters can be construced based on their null distribution
+$$
+\frac{\widehat{\beta}_j}{\text{se}(\widehat{\beta}_j)} \sim t_{n-p}.
+$$
+That is a $(1-\alpha)$ confidence interval is
+$$
+\widehat{\beta_j} \pm t_{n-p}^{(\alpha/2)} \text{se}(\widehat{\beta_j}).
+$$
+```{r}
+confint(lmodi)
+```
+
+## Diagnostics
+
+- Typical assumptions of linear models are
+    1. $\mathbb{E}(\mathbf{Y}) = \mathbf{X} \boldsymbol{\beta}$, or equivalently, $\mathbb{E}(\boldsymbol{\epsilon}) = \mathbf{0}$. That is we have included all the right variables and $Y$ depends on them linearly.   
+    2. Errors $\epsilon_i$ are independent and normally distributed with common variance $\sigma^2$. That is $\widehat{\boldsymbol{\epsilon}} \sim \text{N}(\mathbf{0}, \sigma_0^2 \mathbf{I}_n)$.    
+    We'd like to check these assumptions using graphical or numerical approaches. 
+
+- Four commonly used diagnostic plots can be conveniently obtained by `plot` function.  
+```{r}
+plot(lmodi)
+```
+
+- The **residual-fitted value plot** is useful for checking the linearity and constant variance assumptions.  
+
+- The **scale-location plot** plots $\sqrt{|\widehat{\epsilon}_i|}$ vs fitted values and serves similar purpose as the residual-fitted value plot.  
+
+- The **QQ plot** checks for the normality assumption.  It plots sorted residuals vs the theoretical quantiles from a standard normal distribution $\Phi^{-1}\left( \frac{i}{n+1} \right)$, $i=1,\ldots,n$.
+
+- **Residual-leverage plot**. The fitted values are
+$$
+\widehat{\mathbf{y}} = \mathbf{X} \widehat{\boldsymbol{\beta}} = \mathbf{X} (\mathbf{X}^T \mathbf{X})^{-1} \mathbf{X}^T \mathbf{y} = \mathbf{H} \mathbf{y}.
+$$
+The diagonal entries of the **hat matrix**, $h_i = H_{ii}$, are called **leverages**. For example,
+$$
+\text{Var}(\widehat{\boldsymbol{\epsilon}}) = \text{Var}(\mathbf{Y} - \mathbf{X} \widehat{\boldsymbol{\beta}}) = \text{Var} [(\mathbf{I} - \mathbf{H}) \mathbf{Y}] = (\mathbf{I} - \mathbf{H}) \text{Var}(\mathbf{Y}) (\mathbf{I} - \mathbf{H}) = \sigma^2 (\mathbf{I} - \mathbf{H}).
+$$
+If $h_i$ is large, then $\text{var}(\widehat{\epsilon_i}) = \sigma^2 (1 - h_i)$ is small. The fit is "forced" to be close to $y_i$. Points on the boundary of the predictor space have the most leverage. 
+
+- The **Cook distance** is a popular influence diagnostic
+$$
+D_i = \frac{(\widehat{y}_i - \widehat{y}_{(i)})^T(\widehat{y}_i - \widehat{y}_{(i)})}{p \widehat{\sigma}^2} = \frac{1}{p} r_i^2 \frac{h_i}{1 - h_i},
+$$
+where $r_i$ are the standardized residuals and $\widehat{y}_{(i)}$ are the predicted values if the $i$-th observation is dropped from data. A large residual combined with a large leverage results in a larger Cook statistic. In this sense it is an **influential point**.  
+
+  Let's display counties with Cook distance $>0.1$. These are those two counties with unusual large `undercount`.
+```{r}
+gavote %>% 
+  mutate(cook = cooks.distance(lmodi)) %>%
+  filter(cook >= 0.1) %>%
+  print(width = Inf)
+```
+Let's plot a bubble plot using `car` package
+```{r}
+influencePlot(lmodi)
+```
+
+The __bubble plot__ combines the display of Studentized residuals, hat-values, and Cook's distances, with the areas of the circles proportional to Cook's $D_i$.
+
+
+Another way to generate a Q-Q plot using the `car` package.
+The default of the `aaPlot()` function in the car package plots Studentized residuals against the corresponding quantiles of $t(n - p - 2)$
+and generates a 95\% pointwise confidence envelope for the Studentized residuals, using a parametric version of the bootstrap.
+```{r}
+qqPlot(lmodi)
+```
+
+
+- Another useful plot to inspect potential outliers in positive values is the **half-normal plot**. Here we plot the sorted leverages $h_i$ against the standard normal quantiles $\Phi^{-1} \left(\frac{n+i}{2n + 1}\right)$. We do not expect a necessary straight line, just look for outliers, which is far away from the rest of the data.
+```{r}
+# this function is available from faraway package
+halfnorm(hatvalues(lmodi), ylab = "Sorted leverages")
+```
+
+These two counties have unusually large leverages. They are actually the only counties that use paper ballot. 
+```{r}
+gavote %>%
+  # mutate(hi = hatvalues(lmodi)) %>%
+  # filter(hi > 0.4) %>%
+  slice(c(103, 131)) %>%
+  print(width = Inf)
+```
+
+### Added-variable plots
+
+```{r, fig.width=15, fig.height=15, out.width = '100%'}
+# avPlots(lmodi)
+# change layout
+avPlots(lmodi, layout = c(4, 2))
+```
+
+### Component-plus-residuals plot
+
+We can generate component-plus-residual plots by `crPlots()` function
+
+```{r}
+crPlots(lmod)  # from car package
+```
+
+
+
+
+
+
+
+
