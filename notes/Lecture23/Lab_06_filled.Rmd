@@ -1,0 +1,192 @@
+---
+title: "Lab 06"
+author: "Dr. Xiang Ji @ Tulane University"
+date: "March 25, 2022"
+output:
+  html_document:
+    toc: yes
+    toc_depth: 4
+subtitle: Math 6040/7260 Linear Models
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list = ls()) # clean-up workspace
+```
+
+## Goal of this lab session
+We practice the diagnostic tools and data transformation using Canadian Survey 
+of Labour and Income Dynamics (SLID).
+We want to replicate the analysis in Chapter 12 in JF.
+
+### Preparations
+
+Let's first load the data.
+
+```{r}
+slid.data <- read.table("SLID-Ontario.txt", header = TRUE)
+# show dimension
+dim(slid.data)
+```
+
+### Fit linear model in 12.1
+
+$$
+Wage = \beta_0 + \beta_1 \cdot Sex + \beta_2 \cdot Age + \beta_3 \cdot Education + \epsilon
+$$
+```{r}
+lmod <- lm(compositeHourlyWages ~ sex + age + yearsEducation, data = slid.data)
+summary(lmod)
+```
+
+## Q.1 
+### Write out the parameter estimates.
+
+**Answer**:
+$$
+\begin{aligned}
+\hat{\beta_0} &= -8.124\\
+\hat{\beta_1} &= 3.474\\
+\hat{\beta_2} &= 0.261\\
+\hat{\beta_3} &= 0.930\\
+\end{aligned}
+$$
+### Write out the associated hypothesis tests for each p-values in the above summary table
+
+The hypothesis test for $\beta_i$ is
+$$
+\begin{aligned}
+H_0: &\beta_i = 0 \\
+&\mbox{ v.s. }\\ 
+H_a: &\beta_i \ne 0
+\end{aligned}
+$$
+
+### What is the $R^2$ value?
+
+$$
+R^2 = 0.3074
+$$
+
+## Q2, Replicate Figure 12.1 (a) Quantile-comparison plot for the studentized residuals from the SLID regression.
+
+```{r}
+library(car)
+qqPlot(lmod, distribution = "t", line = "none", envelop = list(style = "lines"))
+```
+
+## Q3
+### Fit another linear regression with log2 (base 2) transformed wage as the response variable.
+$$
+\log_2(Wage) = \beta_0' + \beta_1' \cdot Sex + \beta_2' \cdot Age + \beta_3' \cdot Education + \epsilon'
+$$
+
+```{r}
+lmod.2 <- lm(log2(compositeHourlyWages) ~ sex + age + yearsEducation, data = slid.data)
+summary(lmod.2)
+```
+
+### Compare your parameter estimates to (12.2)
+
+$$
+\begin{aligned}
+\hat{\beta_0'} &= 1.586\\
+\hat{\beta_1'} &= 0.324\\
+\hat{\beta_2'} &= 0.262\\
+\hat{\beta_3'} &= 0.081\\
+\end{aligned}
+$$
+
+### Report $R^2$ value
+
+$$
+R^2 = 0.3212
+$$
+
+### Replicate Figure 12.2 (a)
+
+```{r}
+qqPlot(lmod.2, distribution = "t", line = "none", 
+       envelop = list(style = "lines", col = 1, alpha = 0.1))
+```
+
+### Has the transformation corrected the positive skew in the original regression model?
+
+**Answer**: Yes.  A positive skew in the residuals can usually be corrected 
+by moving the __response__ variable down the ladder of powers and roots.
+
+
+## Q4
+
+### Replicate Figure 12.3 (a) of Studentized residuals versus fitted values from the first model (without data transformation)
+
+```{r}
+residualPlot(lmod, variable = "fitted", type = "rstudent", col = "grey", 
+             smooth = list(smoother=loessLine, span = 0.4, col = "black"),
+             quadratic = FALSE)
+```
+
+### Replicate Figure 12.4 (a) of studentized residuals versus fitted values from the second model (with log2 transformed wage)
+
+```{r}
+residualPlot(lmod.2, variable = "fitted", type = "rstudent", col = "grey", 
+             smooth = list(smoother=loessLine, span = 0.4, col = "black"),
+             quadratic = FALSE)
+```
+
+### Comment on your findings from the last two plots
+
+**Answer**: (from JF 12.2.1) The log transformation of wages made the distribution of 
+studentized residuals more symmetric (as shown in the Quantile-comparison plot).
+The same transformation approximately stabilizes the residual variance, 
+as illustrated in the above plots.
+This outcome is not surprising because the heavy right tail of 
+the residual distribution and nonconstant sppread are 
+both common consequences of the lower bound of $0$ for the response variable.
+
+Transforming $Y$ changes the shape of the error distribution, 
+but it also alters the shape of the regression of $Y$ on the $X$s.
+At times, eliminating nonconstant spread also makes the relationship of $Y$ to
+the $X$s more nearly linear, but this is not a necessary consequence of 
+stabilizing the response variable.
+Of course, because there is generally no reason to suppose that 
+the regression is linear __prior__ to transforming $Y$, 
+we should check for nonlinearity in any event.
+
+
+## Q5
+
+### Replicate Figure 12.6, Component-plus-residual plots for age and education
+in the SLID regression of log wages on these variables and sex.
+
+```{r}
+# plot all together
+crPlots(lmod.2, col = "grey")
+
+# plot one at a time
+# I didn't figure out how to change line colors...
+crPlot(lmod.2, variable = "age", col = "grey",
+       smooth = list(smoother=loessLine, span = 0.4, col = "black"))
+
+crPlot(lmod.2, variable = "yearsEducation", col = "grey",
+       smooth = list(smoother=loessLine, span = 0.4, col = "black"))
+```
+
+### write out your findings
+
+**Answer**: (from JF 12.3.1) Both plots look nonlinear: It is not entirely clear
+whether the partial relationship of log wages to age is monotone,
+simply tending to level off at the higher ages, or whether it is nonmonotone,
+turning back down at the far right.
+
+In the former event, we should be able to linearize the relationship by moving 
+age __down__ the ladder of powers because the bulge points to the left.
+In the latter event, a quadratic partial regression might work.
+
+In contrast, the partial relationship of log wages to education is clearly monotone, 
+and the departure from linearity is not great -- except at the lowest levels of education,
+where data are sparse; we should be able to linearize this partial relationship
+by moving education __up__ the ladder of powers, because the bulge points to the right.
+
+
+

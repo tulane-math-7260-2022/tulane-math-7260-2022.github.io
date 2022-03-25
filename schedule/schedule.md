@@ -34,6 +34,6 @@ Topics:
 | **02/28** no class (Mardi Gras Holiday)| **03/02** Dummy variable regression | **03/04** Lab 4 \[[Rmd](../notes/Lecture16/Lab_04_to_fill.Rmd)\]\[[HTML](../notes/Lecture16/Lab_04_to_fill.html)\] | |
 | **03/07** Interactions | **03/09** no class (mid-term exam begins) | **03/11** mid-term exam | |
 | **03/14** Unusual data  | **03/16** Added variable plot | **03/18** Lab 5 \[[Rmd](../notes/Lecture20/Lab_05.Rmd)\]\[[HTML](../notes/Lecture20/Lab_05.html)\] | |
-| **03/21** More diagnostics | **03/23** Data transformation | | [HW3](../HW/HW3/HW3.pdf) |
+| **03/21** More diagnostics | **03/23** Data transformation | **03/25** Lab 6 \[[Rmd](../notes/Lecture23/Lab_06_to_fill.Rmd)\]\[[HTML](../notes/Lecture23/Lab_06_to_fill.html)\] | [HW3](../HW/HW3/HW3.pdf) |
 | **03/28** no class (spring break) | **03/30** no class (spring break) | **04/01** no class (spring break) | |
 | **05/02** Final exam | | | |

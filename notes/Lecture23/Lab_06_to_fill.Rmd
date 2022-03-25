@@ -1,0 +1,123 @@
+---
+title: "Lab 06"
+author: "Dr. Xiang Ji @ Tulane University"
+date: "March 25, 2022"
+output:
+  html_document:
+    toc: yes
+    toc_depth: 4
+subtitle: Math 6040/7260 Linear Models
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list = ls()) # clean-up workspace
+```
+
+## Goal of this lab session
+We practice the diagnostic tools and data transformation using Canadian Survey 
+of Labour and Income Dynamics (SLID).
+We want to replicate the analysis in Chapter 12 in JF.
+
+### Preparations
+
+Let's first load the data.
+
+```{r}
+slid.data <- read.table("SLID-Ontario.txt", header = TRUE)
+# show dimension
+dim(slid.data)
+```
+
+### Fit linear model in 12.1
+
+$$
+Wage = \beta_0 + \beta_1 \cdot Sex + \beta_2 \cdot Age + \beta_3 \cdot Education + \epsilon
+$$
+```{r}
+lmod <- lm(compositeHourlyWages ~ sex + age + yearsEducation, data = slid.data)
+summary(lmod)
+```
+
+## Q.1 
+### Write out the parameter estimates.
+
+### Write out the associated hypothesis tests for each p-values in the above summary table
+
+
+### What is the $R^2$ value?
+
+
+## Q2, Replicate Figure 12.1 (a) Quantile-comparison plot for the studentized residuals from the SLID regression.
+
+```{r, eval = FALSE}
+library(car)
+qqPlot(lmod, distribution = , line = "none", envelop = list(style = "lines"))  # fill in the distribution type
+```
+
+## Q3
+### Fit another linear regression with log2 (base 2) transformed wage as the response variable.
+$$
+\log_2(Wage) = \beta_0' + \beta_1' \cdot Sex + \beta_2' \cdot Age + \beta_3' \cdot Education + \epsilon'
+$$
+
+```{r, eval = FALSE}
+lmod.2 <- lm()
+summary(lmod.2)
+```
+
+### Compare your parameter estimates to (12.2)
+
+
+### Report $R^2$ value
+
+
+### Replicate Figure 12.2 (a)
+
+```{r, eval = FALSE}
+qqPlot(lmod.2, distribution = , line = "none", 
+       envelop = list(style = "lines", col = 1, alpha = 0.1))
+```
+
+### Has the transformation corrected the positive skew in the original regression model?
+
+
+## Q4
+
+### Replicate Figure 12.3 (a) of Studentized residuals versus fitted values from the first model (without data transformation)
+
+```{r, eval = FALSE}
+residualPlot(lmod, ) # look at the documentation of this function and finish it
+```
+
+### Replicate Figure 12.4 (a) of studentized residuals versus fitted values from the second model (with log2 transformed wage)
+
+```{r, eval = FALSE}
+residualPlot(lmod.2, )
+```
+
+### Comment on your findings from the last two plots
+
+
+## Q5
+
+### Replicate Figure 12.6, Component-plus-residual plots for age and education
+in the SLID regression of log wages on these variables and sex.
+
+```{r, eval = FALSE}
+# plot all together
+crPlots(lmod.2, col = "grey")
+
+# plot one at a time
+# I didn't figure out how to change line colors...
+crPlot(lmod.2, variable = "age", col = "grey",
+       smooth = list(smoother=loessLine, span = 0.4, col = "black"))
+
+crPlot(lmod.2, variable = "yearsEducation", col = "grey",
+       smooth = list(smoother=loessLine, span = 0.4, col = "black"))
+```
+
+### Write out your findings
+
+
+
