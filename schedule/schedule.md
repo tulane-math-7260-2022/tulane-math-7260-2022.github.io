@@ -36,5 +36,5 @@ Topics:
 | **03/14** Unusual data  | **03/16** Added variable plot | **03/18** Lab 5 \[[Rmd](../notes/Lecture20/Lab_05.Rmd)\]\[[HTML](../notes/Lecture20/Lab_05.html)\] | |
 | **03/21** More diagnostics | **03/23** Data transformation | **03/25** Lab 6 \[[Rmd](../notes/Lecture23/Lab_06_to_fill.Rmd)\]\[[HTML](../notes/Lecture23/Lab_06_to_fill.html)\] | [HW3](../HW/HW3/HW3.pdf) |
 | **03/28** no class (spring break) | **03/30** no class (spring break) | **04/01** no class (spring break) | |
-| **04/04** Collinearity and PCA | **04/06** Biased estimation, Model selection | | |
+| **04/04** Collinearity and PCA | **04/06** Biased estimation, Model selection | **04/08** Lab 7 \[[Rmd](../notes/Lecture26/Lab_07_to_fill.Rmd)\]\[[HTML](../notes/Lecture26/Lab_07_to_fill.html)\] | |
 | **05/02** Final exam | | | |
