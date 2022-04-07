@@ -1,0 +1,250 @@
+---
+title: "Lab 07: Model Selection"
+author: "Dr. Xiang Ji @ Tulane University"
+date: "April 08, 2022"
+output:
+  html_document:
+    toc: true
+    toc_depth: 4  
+subtitle: MATH-6040/7260 Linear Models
+csl: ../apa.csl
+---
+
+
+## Formulas in R
+
+reference [R4DS](https://r4ds.had.co.nz/model-basics.html#formulas-and-model-families)
+
+R uses formulas for most modelling functions.
+
+A simple example: `y ~ x` translates to: $y = \beta_0 + x\beta_1$.
+
+Below is a summary for some popular uses
+
+| Use | Example | Translation |
+| --- | ------- | ----------- |
+| Simple example | `y ~ x` |  $y = \beta_0 + x\beta_1$ |
+| Exclude intercept | `y ~ x - 1` or `y ~ x + 0` | $y = x\beta$ |
+| Add a continuous variable | `y ~ x1 + x2` | $y = \beta_0 + x_1 \beta_1 + x_2 \beta_2$ |
+| Add a categorical variable | `y ~ x1 + sex` | $y = \beta_0 + x_1 \beta_1 + \mbox{sex_male} \beta_2$ |
+| Interactions (continuous and categorical)| `y ~ x1 * sex` | $y = \beta_0 + x_1 \beta1 + \mbox{sex_male} \beta_2 + x_1 \mbox{sex_male} \beta_{12}$|
+| Interactions (continuous and continuous)| `y ~ x1 * x_2` | $y = \beta_0 + x_1 \beta1 + x_2 \beta_2 + x_1 x_2 \beta_{12}$|
+
+You can specify transformations inside the model formula too (besides creating new transformed variables in your data frame).
+
+For example, `log(y) ~ sqrt(x1) + x2` is transformed to $\log(y) = \beta_0 + \sqrt{x_1} \beta_1 + x_2 \beta_2$.
+
+One thing to note is that if your transformation involves `+`, `*`, `^` or `-`, you will need to wrap it in `I()` so R doesn't treat it like part of the model specification.
+
+For example, `y ~ x + I(x ^ 2)` is translated to $y = \beta_0 + x \beta_1 + x^2 \beta_2$.
+
+And remember, R automatically drops redundant variables so `x + x` become `x`.
+
+### Q1 write out the translations for the formulas below:
+
+- `y ~ x ^ 2 + x`
+
+$y = \beta_0 + x\beta_1$
+```{r}
+set.seed(6040)
+model.frame( y ~ x^2 + x, data = data.frame(x = rnorm(10), y = rnorm(10)))
+model.frame( y ~ x + I(x^2), data = data.frame(x = rnorm(10), y = rnorm(10))) 
+# I() is treated "as is".
+print(all.vars(y ~ x^2 + x))
+print(all.vars(y ~ x + I(x^2)))
+```
+
+- `y ~ x + x^2 + x^3`
+
+$y = \beta_0 + x\beta_1$
+```{r}
+set.seed(6040)
+model.frame( y ~ x + x^2 + x^3, data = data.frame(x = rnorm(10), y = rnorm(10)))
+print(all.vars(y ~ x + x^2 + x^3))
+```
+
+- `y ~ poly(x, 3)`
+
+$y = \beta_0 + x\beta_1 + x^2\beta_2 + x^3\beta_3$
+```{r}
+set.seed(6040)
+model.frame( y ~ poly(x, 3), data = data.frame(x = rnorm(10), y = rnorm(10)))
+```
+
+- `y ~ (x1 + x2 + x3)^2 + (x2 + x3) * (x4 + x5)`
+
+$$
+y = \beta_0 + x_1\beta_1 + x_2 \beta_2 + x_3 \beta_3 + x_4 \beta_4 + x_4\beta_5 +
+x_1 x_2 \beta_{12} + x_1 x_3 \beta_{13} + x_2 x_3 \beta_{23} + x_2 x_4 \beta_{24} + x_2 x_5 \beta_{25} 
++ x_3 x_4 \beta_{34} + x_3 x_5 \beta_{35}
+$$
+
+## Model selection
+
+Let's put more thinking into modeling the fish data and  try out several formulas.
+We know that from physics, the **Weight** is the proportional to the density multiply volume.
+As in the mid-term exam, let's include two "basic" models first:
+
+- Model 1: `Weight ~ Length1 + Length2 + Length3 + Height + Width`
+
+- Model 2: `Weight ~ Species + Length1 + Length2 + Length3 + Height + Width`
+
+Inspired from what we learn in physics, we may expect `Species` to be a good variable to model the differences in density (and probably other unintended effects) among species of fish.
+How do we model volume?
+
+- Model 3: `Weight ~ Species * (Length1 + Length2 + Length3 + Height + Width)`.
+If the size of cross-sections among different fish species is quite close, 
+then it might be reasonable to approximate the volume by one-dimensional lengths.
+
+- Model 4: `Weight ~ Species * (Length1 + Length2 + Length3 + Height + Width)^2`.
+Well, how about considering the higher order terms between length measurements 
+with their interaction terms, therefore, possibly including sizes for some cross-sections.
+
+- Model 5: `Weight ~ Species * (Length1 + Length2 + Length3 + Height + Width)^3`.
+Well, how about considering the higher order terms between length measurements 
+with their interaction terms, therefore, possibly including sizes for some cross-sections.
+
+- Model 6: `Weight ~ Species * Length1 * Height * Width`.
+How about something really like density * volume?
+
+- Model 7: `log(Weight) ~ Species + Length1 + Length2 + Length3 + Height + Width`.
+How about transforming the response, then the addition on the right-hand side of the formula will be multiplicative in the original Weight dimension.
+
+- Model 8: `log(Weight) ~ Species * (Length1 + Length2 + Length3 + Height + Width)`.
+What about adding back the interactions?
+
+
+
+```{r}
+fish.data <- read.csv("Fish.csv")
+# before fitting your model, check the weight parameter values to see if all of them make sense.
+# you might want to disgard the row with weight = 0.
+fish.data <- fish.data[fish.data[, "Weight"] > 0, ]
+```
+
+### Q2a Fit the above models and record their adjusted-$R^2$ values.
+Which model obtains the highest adjusted-$R^2$ value?
+Do all coefficient estimates make sense? Do you get any estimates as `NA`? Why?
+(Hint: you may want to check with `rank`.
+Also, compare the number of parameters in the model with the number of parameters.)
+
+```{r}
+lmod.model.1 <- lm(Weight ~ Length1 + Length2 + Length3 + Height + Width, data = fish.data)
+(summary(lmod.model.1))
+
+lmod.model.2 <- lm(Weight ~ Species + Length1 + Length2 + Length3 + Height + Width, data = fish.data)
+(summary(lmod.model.2))
+
+lmod.model.3 <- lm(Weight ~ Species *( Length1 + Length2 + Length3 + Height + Width), data = fish.data)
+(summary(lmod.model.3))
+
+lmod.model.4 <- lm(Weight ~ Species *( Length1 + Length2 + Length3 + Height + Width)^2, data = fish.data)
+(summary(lmod.model.4))
+
+lmod.model.5 <- lm(Weight ~ Species *( Length1 + Length2 + Length3 + Height + Width)^3, data = fish.data)
+(summary(lmod.model.5))
+
+lmod.model.6 <- lm(Weight ~ Species * Length1 * Height * Width, data = fish.data)
+(summary(lmod.model.6))
+
+lmod.model.7 <- lm(log(Weight) ~ Species + Length1 + Length2 + Length3 + Height + Width, data = fish.data)
+(summary(lmod.model.7))
+
+lmod.model.8 <- lm(log(Weight) ~ Species * (Length1 + Length2 + Length3 + Height + Width), data = fish.data)
+(summary(lmod.model.8))
+```
+
+Yes, model 4, 5, 6 have estimates being `NA` (Not available).
+By checking the rank of the models (for example, `lmod.model.4$rank`), we see that these models suffer from rank deficiency (in other words, linear dependencies between explanatory variables).
+At the same time, with the 158 observations in the data, these model consist too many parameters that we might simply do not have enough data to estimate them. 
+We probably should not consider model 4, 5, 6 at the first place given the size of our data.
+
+
+### Q2b Use the function `extractAIC` to obtain the AIC score for the above models (the second output). Which model has the lowest AIC score?
+```{r}
+(lmod.model.1.AIC <- extractAIC(lmod.model.1))
+(lmod.model.2.AIC <- extractAIC(lmod.model.2))
+(lmod.model.3.AIC <- extractAIC(lmod.model.3))
+(lmod.model.4.AIC <- extractAIC(lmod.model.4))
+(lmod.model.5.AIC <- extractAIC(lmod.model.5))
+(lmod.model.6.AIC <- extractAIC(lmod.model.6))
+(lmod.model.7.AIC <- extractAIC(lmod.model.7))
+(lmod.model.8.AIC <- extractAIC(lmod.model.8))
+```
+
+Model 8 has the lowest AIC value.
+
+
+----------------------------------------------------
+
+Now let's play with sequential methods.
+
+Just recall...
+
+1. Forward selection:
+
+    1. Determine a shreshold significance level for entering predictors into the model
+    
+    2. Begin with a model without any predictors, i.e., $y = \beta_0 + \epsilon$
+    
+    3. For each predictor not in the model, fit a model that adds that predictor to the working model.  Record the t-statistic and p-value for the added predictor.
+    
+    4. Do any of the predictors considered in step 3 have a p-value less than the shreshold specified in step 1?
+    
+        - Yes: Add the predictor with the smallest p-value to the working model and return to step 3
+        
+        - No: Stop.  The working model is the final model.
+        
+
+2. Backwards elimination
+
+    1. Determine a threshold significance level for removing predictors from the model.
+    
+    2. Begin with a model that includes all predictors.
+    
+    3. Examine the t-statistic and p-value of the partial regression coefficients associated with each predictor.
+    
+    4. Do any of the predictors have a p-value **greater** than the threshold specified in step 1?
+    
+        - Yes: Remove the predictor with the largest p-value from the working model and return to step 3.
+        
+        - No: Stop.  The working model is the final model.
+        
+3. Stepwise selection
+
+    Combines forward selection and backwards elimination steps.
+  
+Now perform Model selection on the Fish dataset.
+
+### Q2c. perform backward elimination initiated from the model 3, use AIC as your ranking function.  
+`Weight ~ Species * (Length1 + Length2 + Length3 + Height + Width)`
+
+```{r}
+(smallm <- step(lmod.model.3, trace = TRUE, direction = "backward"))
+```
+
+
+### Q2d What terms are in your final model?
+
+`Weight ~ Species + Length1 + Length3 + Height + Width + Species:Length1 + Species:Length3 + Species:Width` 
+
+### Q2e perform backward model selection from the model 8 
+`log(Weight) ~ Species * (Length1 + Length2 + Length3 + Height + Width)`
+
+```{r}
+(smallm <- step(lmod.model.8, trace = TRUE, direction = "backward"))
+```
+
+### Q2f How different is your result for Q2e from that for Q2d?
+Comment: 
+Variable `Length2` is dropped in Q2d while variable `Length1` and `Length3` remain.
+However, variable `Length2` is kept in the result of Q2e while variables `Length1` and `Length3` are dropped.
+A closer look at the linear correlations between the three length variables reveals high collinearity.
+It's reasonable and recommended to drop one of them to reduce collinearity.
+```{r}
+length.collinearity <- lm(Length2 ~ Length1 + Length3, data = fish.data)
+summary(length.collinearity)
+```
+
+Furthermore, the interaction terms differ between the two final models.
+
