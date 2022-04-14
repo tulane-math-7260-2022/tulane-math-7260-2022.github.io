@@ -1,0 +1,158 @@
+---
+title: "Lecture 27: Lab session"
+author: "Dr. Xiang Ji @ Tulane University"
+date: "April 2, 2021"
+output:
+  html_document:
+    toc: true
+    toc_depth: 4  
+subtitle: MATH-6040/7260 Linear Models
+csl: ../apa.csl
+---
+
+## Lasso Regression
+
+Let's now use lasso regression to select predictors for the Fish data.
+
+```{r}
+rm(list=ls())  # clean up workspace
+fish.data <- read.csv("Fish.csv")
+# before fitting your model, check the weight parameter values to see if all of them make sense.
+# you might want to disgard the row with weight = 0.
+fish.data <- fish.data[fish.data[, "Weight"] > 0, ]
+```
+
+Now let's divide the data into a training set (~80% of original observations) and a validation set (~20% of original observations).
+
+```{r}
+library(glmnet)
+library(caret)
+set.seed(6040)
+
+training_samples <- createDataPartition(fish.data$Weight, p = 0.8, list = FALSE)
+```
+
+Let's start from Model 8 from last lab session:
+`log(Weight) ~ Species * (Length1 + Length2 + Length3 + Height + Width)`.
+The `glmnet` package takes a matrix (of predictors) and a vector (of responses) as input.
+We use `model.matrix` function to create them. 
+`glmnet` will add intercept by default, so we drop intercept term when forming `x` matrix.
+
+```{r}
+# X and y from original data
+x_all <- model.matrix(
+  log(Weight) ~ 0 + Species * (Length1 + Length2 + Length3 + Height + Width), # remove the intercept term in the design matrix
+  data = fish.data)
+y_all <- log(fish.data$Weight)
+# training X and y
+x_train <- x_all[training_samples[, 1], ]
+y_train <- y_all[training_samples[, 1]]
+# validation X and y
+x_val <- x_all[-training_samples[, 1], ]
+y_val <- y_all[-training_samples[, 1]]
+```
+
+### Now fit the lasso regression and plot solution path:
+
+```{r}
+lasso_fit <- glmnet(x_train, y_train, alpha = 1)
+summary(lasso_fit)
+plot(lasso_fit, xvar = "lambda", label = TRUE)
+```
+
+
+- Now we can evaluate the performance of the models (corresponding to different $\lambda$ values) on the validation set.
+```{r}
+library(tidyverse)
+# predict validation case probabilities at different \lambda values and calculate test deviance
+pred_val <- predict(lasso_fit, newx = x_val, type = "response", s = lasso_fit$lambda)
+mse_val <- colSums((y_val - pred_val)^2/dim(training_samples)[1])
+validation.tibble <- tibble(lambda = lasso_fit$lambda, mse_val = mse_val)
+ggplot(data = validation.tibble) + 
+  geom_point(mapping = aes(x = lambda, y = mse_val)) + 
+  scale_x_log10() +
+  labs(y = "Mean squared error on validation set", x = "Lambda")
+```
+
+It seems that $\lambda = 0.00067$ yields a model with the minimum MSE(mean squared error) on the validation set.
+
+- Now the question is whether we should make decision on this single training-validation split? A common strategy is to use **k-fold cross validation**. 
+```{r}
+set.seed(7260)
+cv_lasso <- cv.glmnet(x_all, y_all, alpha = 1, type.measure = "deviance", nfolds = 5)  # check the documentation of the argument type.measure to find that "deviance" corresponds to squared-error for guassian models.
+plot(cv_lasso)
+```
+
+The plot displays the cross-validation error (deviance by default) according to the log of lambda. The left dashed vertical line indicates that the log of the optimal value of log lambda is approximately $-8.06$, which is the one that minimizes the average deviance. This lambda value will give the most accurate model. The exact value of lambda and corresponding model can be viewed as follow:
+```{r}
+cv_lasso$lambda.min
+coef(cv_lasso, cv_lasso$lambda.min)
+```
+
+We see that this model differs from the best model chosen by AIC by replacing the predictor `Length2` by `Length3`.
+However, it also dropped the level `SpeciesPerch` which appeared in the interaction term.
+It's better that we manually put the level `SpeciesPerch` back into our final model.
+
+### What is the difference between the above two procedures?
+
+`cv.glmnet` performs a k-fold cross-validation.
+We set `nfold=5` for a 5-fold cross-validation that each subset contains roughly 20% of original observations.
+
+The manual split of data into a training set with 80% of original data and a validation set with 20% of original data is roughly what 5-fold cross validation does for one subset (using one subset as the validation set and the other 4 as the training set).
+The complete 5-fold cross validation performs the same procedure for each subset and use the average as the measure.
+
+
+--------------------------------------------------------
+
+## ANOVA 
+
+Reference: [Two-way ANOVA test in R](http://www.sthda.com/english/wiki/two-way-anova-test-in-r)
+
+Let's use R to perform a Two-way ANOVA test on the honeybee data to test what you have calculated in class.
+
+Data preparation:
+```{r}
+library(tidyverse)
+honey.bee <- matrix(c(20, 20, 3.1, 3.7, 4.7,
+		20, 40, 5.5, 6.7, 7.3,
+		20, 60, 7.9, 9.2, 9.3,
+		30, 20, 6, 6.9, 7.5,
+		30, 40, 11.5, 12.9, 13.4,
+		30, 60, 17.5, 15.8, 14.7,
+		40, 20, 7.7, 8.3, 9.5,
+		40, 40, 15.7, 14.3, 15.9,
+		40, 60, 19.1, 18.0, 19.9), 9, 5, byrow = TRUE)
+colnames(honey.bee) <- c("Temp", "Suc", "rep.1", "rep.2", "rep.3")
+
+honey.bee.df <- as_tibble(honey.bee) %>%  # %>% is the pipe operator, read more about it here: https://r4ds.had.co.nz/pipes.html
+  pivot_longer(cols = c("rep.1", "rep.2", "rep.3"), names_to = NULL, values_to = "Consumption") %>%
+  mutate(Temp = as.factor(Temp), Suc = as.factor(Suc))  # change variable types to factor
+```
+
+### Use the function `aov` to perform ANOVA test.  You may refer to the reference link above.
+
+```{r}
+res.aov <- aov(Consumption ~ Temp * Suc, data = honey.bee.df)
+summary(res.aov)
+```
+
+### Use the function `interaction.plot` to generate an interaction plot with `Temp` as the x factor and `Suc` as the trace factor.
+
+```{r}
+library("wesanderson") # color palette package
+interaction.plot(x.factor = honey.bee.df$Temp, trace.factor = honey.bee.df$Suc, 
+                 response = honey.bee.df$Consumption, fun = mean, 
+                 type = "b", legend = TRUE, 
+                 xlab = "Temperature", ylab="Energy consumption",
+                 trace.label = "Sucrose concentration",
+                 pch=c(1,19), col = wes_palette("Zissou1"))
+```
+
+Alternatively
+
+```{r}
+library("ggpubr")
+ggline(honey.bee.df, x = "Temp", y = "Consumption", color = "Suc",
+       add = c("mean_se", "dotplot"),
+       palette = wes_palette("Chevalier1")[c(1, 2, 4)])
+```
