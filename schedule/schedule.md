@@ -38,4 +38,6 @@ Topics:
 | **03/28** no class (spring break) | **03/30** no class (spring break) | **04/01** no class (spring break) | |
 | **04/04** Collinearity and PCA | **04/06** Biased estimation, Model selection | **04/08** Lab 7 \[[Rmd](../notes/Lecture26/Lab_07_to_fill.Rmd)\]\[[HTML](../notes/Lecture26/Lab_07_to_fill.html)\] | |
 | **04/11** One-way ANOVA | **04/13** Two-way ANOVA and ANCOVA  | **04/15** Lab 8 \[[Rmd](../notes/Lecture29/Lab_08_to_fill.Rmd)\]\[[HTML](../notes/Lecture29/Lab_08_to_fill.html)\] | |
+| **04/18** Linear contrasts, Multiple comparisons | | | |
+| | | | |
 | **05/02** Final exam | | | |
