@@ -1,0 +1,131 @@
+---
+title: "Lecture 32: Lab 09"
+author: "Dr. Xiang Ji @ Tulane University"
+date: "April 22, 2022"
+output:
+  html_document:
+    toc: true
+    toc_depth: 4  
+subtitle: MATH-6040/7260 Linear Models
+csl: ../apa.csl
+---
+
+## Q.1 Sample size calculation for one-way ANOVA model
+
+Let's now revisit the binding fraction example for sample size calculation.
+Suppose that we want to test equal mean binding fractions among antibiotics against the alternative
+$$
+H_1: \mu_p = \mu + 3, \mu_t = \mu+3, \mu_s = \mu - 6, \mu_E = \mu, \mu_C = \mu
+$$
+so that
+$$
+\mu_ 1 = \mu_2 = 3, \mu_3 = -6, \mu_4 = \mu_5 = 0.
+$$
+
+Assume $\sigma = 3$ and we need to use $\alpha = 0.05$.
+The noncentrality parameter is given by
+$$
+\gamma = n[(\frac{3}{3})^2 +(\frac{3}{3})^2 + (\frac{-6}{3})^2]
+$$
+and the $\alpha = 0.05$ critical value for $H_0$ is given by
+$$
+F^* = F(5 - 1, 5n - 5, 0.05)
+$$
+We need the area to the right of $F^*$ for the noncentral $F$ distribution with degrees of freedom $4$ and $5(n - 1)$ and noncentrality parameter $\gamma = 6n$ to be greater or equal to the desired power level of $1 - \beta = 0.8$.
+
+Now we will do the "real" calculations to finish this example.
+
+We proceed by filling out the columns of the following table step by step.
+
+| $n$ | ndf | ddf | NCP | QF | PF | POWER |
+|:---:|:-----:|:-----:|:---:|:--:|:--:|:-----:|
+|2 | | | | | | |
+|3 | | | | | | |
+|4 | | | | | | |
+|5 | | | | | | |
+|6 | | | | | | |
+|7 | | | | | | |
+|8 | | | | | | |
+|9 | | | | | | |
+|10 | | | | | | |
+
+### a. prepare data
+
+```{r}
+rm(list=ls())  # clean up workspace
+library(tidyverse)
+binding.fraction.data <- matrix(
+  c(29.6, 24.3, 28.5, 32.0,
+		 27.3, 32.6, 30.8, 34.8,
+		 5.8, 6.2, 11.0, 8.3,
+		 21.6, 17.4, 18.3, 19,
+		 29.2, 32.8, 25.0, 24.2), nrow = 5, ncol = 4, byrow = TRUE
+)
+rownames(binding.fraction.data) <- c("Penicillin G", "Tetracyclin", "Streptomycin", "Erythromycin", "Chloramphenicol")
+
+binding.df <- as_tibble(binding.fraction.data, rownames = NA) %>%
+  rownames_to_column(var = "antibiotic") %>%
+  pivot_longer(cols = 2:5, values_to = "bf", names_to = NULL)
+```
+
+Let's consider a sequence of $n$ values from $2$ to $10$.
+
+```{r}
+n <- 2:10
+```
+
+### b. fill out the column of denominator df
+```{r}
+```
+
+### c. fill out the column of noncentrality parameter (NCP)
+
+```{r}
+```
+
+### d. fill out the column of critical value $F^*$ (QF)
+
+```{r}
+```
+
+### e. fill out the column of area to the **left** of $F^*$ (PF)
+
+$$
+ \Pr(MS[Trt]/MS[E] < F^*; H_1 \mbox{ is true})
+$$
+
+```{r}
+```
+
+### f. fill out the column of power (which is the **right** of $F^*$ under $H_1$)
+$$
+ \Pr(MS[Trt]/MS[E] > F^*; H_1 \mbox{ is true})
+$$
+
+```{r}
+```
+
+### g. what does the table look like now?
+
+
+
+### h. what is the lowest sample size that obtains at least power of $0.8$?
+
+
+## Q.2 Use the function `power.anova.test`
+
+Read the documentation of `power.anova.test` function in R.
+You may use this webpage for reference [webpage link](https://stats.idre.ucla.edu/r/dae/one-way-anova-power-analysis/).
+
+Repeat the power calculations above using `power.anova.test` function.  Do you obtain the same values?
+
+```{r}
+```
+
+
+
+
+
+
+
+
